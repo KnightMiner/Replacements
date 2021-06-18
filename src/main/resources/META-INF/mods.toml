@@ -1,0 +1,25 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="MIT"
+[[mods]]
+modId="replacements"
+version="${file.jarVersion}"
+displayName="Replacements"
+authors="KnightMiner"
+description='''
+Simple mod for controlling missing mappings when removing a mod.
+
+Use at your own risk, as remapping a value then readding the mod could permanently damage your world.
+'''
+[[dependencies.replacements]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.replacements]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.16.5,1.17)"
+    ordering="NONE"
+    side="BOTH"
