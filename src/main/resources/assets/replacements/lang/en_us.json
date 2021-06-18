@@ -1,0 +1,4 @@
+{
+  "command.replacements.dump.success": "Successfully dumped all '%s' values for '%s' to log",
+  "command.replacements.dump_all.success": "Successfully dumped all registry values for '%s' to log"
+}
