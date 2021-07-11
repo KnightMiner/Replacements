@@ -30,7 +30,7 @@ public class ReplacementRegistry<T extends IForgeRegistryEntry<T>> {
 		this.name = name;
 		this.registrySupplier = registrySupplier;
 		this.configList = config.comment("IDs to remap on missing mappings, format is 'old_mod:old_id=new_mod:new_id")
-														.defineList(name, Collections.emptyList(), this::isValid);
+														.defineList(name, Collections.emptyList(), ReplacementRegistry::isValid);
 
 		// add listeners
 		MinecraftForge.EVENT_BUS.addGenericListener(classType, this::onMissingMappings);
@@ -45,29 +45,34 @@ public class ReplacementRegistry<T extends IForgeRegistryEntry<T>> {
 	/**
 	 * Ensures the given array object is valid
 	 */
-	private boolean isValid(Object value) {
+	private static boolean isValid(Object value) {
 		if (!(value instanceof String)) {
+			Replacements.LOGGER.error("Non-string value {}", value);
 			return false;
 		}
-		return isValid(((String) value).split("="));
+		String string = (String) value;
+		return isValid(string.split("="), string);
 	}
 
 	/**
 	 * Ensures the given string is valid
 	 */
-	private boolean isValid(String[] parts) {
+	private static boolean isValid(String[] parts, String string) {
 		if (parts.length != 2) {
+			Replacements.LOGGER.error("Wrong number of parts in string {}", string);
 			return false;
 		}
 		ResourceLocation oldName = ResourceLocation.tryParse(parts[0]);
 		if (oldName == null) {
+			Replacements.LOGGER.error("Invalid old name {} for new name {}", parts[0], parts[1]);
 			return false;
 		}
 		ResourceLocation newName = ResourceLocation.tryParse(parts[1]);
 		if (newName == null) {
+			Replacements.LOGGER.error("Invalid new name {} for old name {}", parts[1], oldName);
 			return false;
 		}
-		return registrySupplier.get().containsKey(newName);
+		return true;
 	}
 
 	/**
@@ -82,8 +87,13 @@ public class ReplacementRegistry<T extends IForgeRegistryEntry<T>> {
 			IForgeRegistry<T> registry = registrySupplier.get();
 			for (String string : strings) {
 				String[] parts = string.split("=");
-				if (isValid(parts)) {
-					remap.put(new ResourceLocation(parts[0]), registry.getValue(new ResourceLocation(parts[1])));
+				if (isValid(parts, string)) {
+					ResourceLocation newName = new ResourceLocation(parts[1]);
+					if (registry.containsKey(newName)) {
+						remap.put(new ResourceLocation(parts[0]), registry.getValue(newName));
+					} else {
+						Replacements.LOGGER.error("Unknown registry key {} for old name {}", newName, parts[0]);
+					}
 				}
 			}
 		}
